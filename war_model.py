@@ -57,8 +57,8 @@ full_data_df = full_data_df.merge(candidate_spending_df, how='inner', left_on='D
 full_data_df = full_data_df.merge(outside_spending_df, how='inner', left_on='District', right_on='District')
 full_data_df['dem_total_spent'] = full_data_df['dem_spend'] + full_data_df['dem_supported'] + full_data_df['gop_opposed']
 full_data_df['gop_total_spent'] = full_data_df['rep_spend'] + full_data_df['gop_supported'] + full_data_df['dem_opposed']
-spending_regularizer = 10000
-full_data_df['spending_delta'] = np.log2((spending_regularizer + full_data_df['gop_total_spent']) / (spending_regularizer + full_data_df['dem_total_spent']))
+spending_regularizer = 50000
+full_data_df['spending_delta'] = np.log((spending_regularizer + full_data_df['gop_total_spent']) / (spending_regularizer + full_data_df['dem_total_spent']))
 
 # which districts to ignore?
 full_data_df['Uncontested'] = False
@@ -90,7 +90,7 @@ war_df['WAR_raw'] = residuals
 # formatting output, saving to csv
 war_df['WAR'] = war_df['WAR_raw'].map(lambda x: f'R +{round(x * 100, 1)}' if x > 0 else f'D +{round(-x * 100, 1)}')
 full_data_df = full_data_df.merge(war_df[['District', 'WAR', 'WAR_raw']], how='left', left_on='District', right_on='District')
-print(full_data_df.sort_values('WAR_raw').head(5))
 # merge with names
 full_data_df = full_data_df.merge(names_df, how='inner')
-full_data_df.to_csv('WAR Model 2022.csv', header=True)
+full_data_df.to_csv('WAR Model 2022 FULL.csv', header=True)
+full_data_df[['District', 'Democrat', 'Republican', 'WAR', 'WAR_raw', 'pres_16', 'pres_20', 'Margin', 'Incumbency', 'State', 'Shift']].sort_values('WAR_raw').to_csv('WAR Model 2022 SKINNY.csv', header=True)
