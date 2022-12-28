@@ -89,7 +89,8 @@ war_df['WAR_raw'] = residuals
 
 # formatting output, saving to csv
 war_df['WAR'] = war_df['WAR_raw'].map(lambda x: f'R +{round(x * 100, 1)}' if x > 0 else f'D +{round(-x * 100, 1)}')
-full_data_df = full_data_df.merge(war_df[['District', 'WAR', 'WAR_raw']], how='left', left_on='District', right_on='District')
+# drop the old margin before merging, use our two way one instead
+full_data_df = full_data_df.drop(columns='Margin').merge(war_df[['District', 'WAR', 'WAR_raw', 'Margin']], how='left', left_on='District', right_on='District')
 # merge with names
 full_data_df = full_data_df.merge(names_df, how='inner')
 full_data_df.to_csv('WAR Model 2022 FULL.csv', header=True)
