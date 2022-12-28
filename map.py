@@ -1,15 +1,18 @@
-import numpy as np
 import pandas as pd
-from sklearn import linear_model
+import geopandas as gpd
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 war_df = pd.read_csv('WAR Model 2022 SKINNY.csv', header=0)
+plt.rcParams["font.family"] = "Georgia"
+
 #######################################
 # PLOT WHAT'S HAPPENING
 map_df = gpd.read_file("congress_shapefile/2020s Adopted CDs USA.shp")
 map_df['CDNAME'] = map_df['CDNAME'].apply(lambda x: x.split('-')[0] + '-' + x.split('-')[1].zfill(2))
 
 map_df = map_df.to_crs(epsg=2163)
-# print(sorted(map_df['STATEFP'].unique()))
+
 # JOIN + TRANSFORM
 map_df = map_df.merge(war_df[['District', 'WAR_raw']], left_on="CDNAME", right_on="District", how="left")
 
@@ -37,7 +40,7 @@ f, ax = plt.subplots(1, figsize=(12, 9))
 cmap = plt.cm.get_cmap("RdBu", 9)
 ax = map_df.plot(column="performance_bucket", cmap=cmap, edgecolor="black", linewidth=0.25, ax=ax)
 ax.legend([mpatches.Patch(color=cmap(b)) for b in list(range(9))],
-           ['> R +10', 'R +5 - R +10', 'R +2.5 - R +5', 'R +2.5 - EVEN', 'UNCONTESTED', 'EVEN - D +2.5', 'D +2.5 - D +5', 'D +5 - D +10', 'D > +10'], loc=(.90, .18), title="Performance vs expectations")
+           ['> R +10', 'R +5 - R +10', 'R +2.5 - R +5', 'R +2.5 - EVEN', 'NO SCORE', 'EVEN - D +2.5', 'D +2.5 - D +5', 'D +5 - D +10', 'D > +10'], loc=(.90, .18), title="Performance vs expectations")
 
 ax.set_axis_off()
 

@@ -1,9 +1,7 @@
 import numpy as np
-import pandas as pd
 from sklearn import linear_model
-import geopandas as gpd
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
+import pandas as pd
+pd.options.mode.chained_assignment = None  # default='warn'
 
 # read in the initial dataframes
 pres_df = pd.read_csv('pres.csv', header=0).fillna(0)
@@ -15,9 +13,6 @@ candidate_spending_df = pd.read_csv('candidate_spending.csv', header=0).fillna(0
 outside_spending_df = pd.read_csv('outside_spending.csv', header=0).fillna(0)
 
 # convert strings to numbers, handle the commas in numbers. i know i can clean this up by doing it more efficiently but i'm tired.
-for col in pres_df.columns:
-    if col != 'District':
-        pres_df[col] = pres_df[col].map(lambda x: float(str(x).replace(',', '')))
 
 for col in demographics_df.columns:
     if col != 'District':
@@ -52,8 +47,10 @@ full_data_df = full_data_df.fillna(0)
 full_data_df['State'] = full_data_df['District'].map(lambda x: x.split('-')[0])
 
 # merge the dataframe with the shifts from 2020 to 2022
-full_data_df = full_data_df.merge(shifts_df[['State', 'Shift']], how='inner')
-full_data_df['Shift'] = full_data_df['Shift'].map(lambda x: float(x.strip('%')) / 100)
+full_data_df = full_data_df.merge(shifts_df[['State', 'pres_shift', 'gcb_shift']], how='inner')
+full_data_df['pres_shift'] = full_data_df['pres_shift'].map(lambda x: float(x.strip('%')) / 100)
+full_data_df['gcb_shift'] = full_data_df['gcb_shift'].map(lambda x: float(x.strip('%')) / 100)
+full_data_df['average_shift'] = (full_data_df['gcb_shift'] + full_data_df['pres_shift']) / 2
 
 # add in spending data
 full_data_df = full_data_df.merge(candidate_spending_df, how='inner', left_on='District', right_on='District')
@@ -74,7 +71,7 @@ X_cols = list(war_df.columns)
 y_col = 'Margin'
 
 # remove irrelevant columns from regression
-cols_to_drop = [y_col, 'District', 'State', 'Dem', 'Rep', 'Total', 'Uncontested']
+cols_to_drop = [y_col, 'District', 'State', 'Dem', 'Rep', 'Total', 'Uncontested', 'pres_shift', 'gcb_shift']
 cols_to_drop += ['dem_total_spent', 'dem_spend', 'dem_raise', 'dem_supported', 'dem_opposed']
 cols_to_drop += ['gop_total_spent', 'rep_spend', 'rep_raise', 'gop_supported', 'gop_opposed']
 
@@ -97,4 +94,4 @@ full_data_df = full_data_df.drop(columns='Margin').merge(war_df[['District', 'WA
 # merge with names
 full_data_df = full_data_df.merge(names_df, how='inner')
 full_data_df.to_csv('WAR Model 2022 FULL.csv', header=True)
-full_data_df[['District', 'Democrat', 'Republican', 'WAR', 'WAR_raw', 'pres_16', 'pres_20', 'Margin', 'Incumbency', 'State', 'Shift']].sort_values('WAR_raw').to_csv('WAR Model 2022 SKINNY.csv', header=True)
+full_data_df[['District', 'Democrat', 'Republican', 'WAR', 'WAR_raw', 'pres_16', 'pres_20', 'Margin', 'Incumbency', 'State', 'average_shift']].sort_values('WAR_raw').to_csv('WAR Model 2022 SKINNY.csv', header=True)
