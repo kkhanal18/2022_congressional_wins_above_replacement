@@ -47,10 +47,8 @@ full_data_df = full_data_df.fillna(0)
 full_data_df['State'] = full_data_df['District'].map(lambda x: x.split('-')[0])
 
 # merge the dataframe with the shifts from 2020 to 2022
-full_data_df = full_data_df.merge(shifts_df[['State', 'pres_shift', 'gcb_shift']], how='inner')
-full_data_df['pres_shift'] = full_data_df['pres_shift'].map(lambda x: float(x.strip('%')) / 100)
-full_data_df['gcb_shift'] = full_data_df['gcb_shift'].map(lambda x: float(x.strip('%')) / 100)
-full_data_df['average_shift'] = (full_data_df['gcb_shift'] + full_data_df['pres_shift']) / 2
+full_data_df = full_data_df.merge(shifts_df[['State', 'average_shift']], how='inner')
+full_data_df['average_shift'] = full_data_df['average_shift'].map(lambda x: float(x.strip('%')) / 100)
 
 # add in spending data
 full_data_df = full_data_df.merge(candidate_spending_df, how='inner', left_on='District', right_on='District')
@@ -71,7 +69,7 @@ X_cols = list(war_df.columns)
 y_col = 'Margin'
 
 # remove irrelevant columns from regression
-cols_to_drop = [y_col, 'District', 'State', 'Dem', 'Rep', 'Total', 'Uncontested', 'pres_shift', 'gcb_shift']
+cols_to_drop = [y_col, 'District', 'State', 'Dem', 'Rep', 'Total', 'Uncontested']
 cols_to_drop += ['dem_total_spent', 'dem_spend', 'dem_raise', 'dem_supported', 'dem_opposed']
 cols_to_drop += ['gop_total_spent', 'rep_spend', 'rep_raise', 'gop_supported', 'gop_opposed']
 
