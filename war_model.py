@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
 from sklearn import linear_model
+import geopandas as gpd
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 # read in the initial dataframes
 pres_df = pd.read_csv('pres.csv', header=0).fillna(0)
