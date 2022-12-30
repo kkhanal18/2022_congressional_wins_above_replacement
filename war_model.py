@@ -85,11 +85,19 @@ model = model.fit(X, y)
 residuals = y - model.predict(X)
 war_df['WAR_raw'] = residuals
 
+# if dem war is > dem margin
+# elif rep war is > rep margin
+war_df['generic_flip'] = False
+war_df['battleground'] = False
+war_df.loc[((war_df['WAR_raw'] > war_df[y_col]) & (war_df[y_col] > 0)), 'generic_flip'] = True
+war_df.loc[((war_df['WAR_raw'] < war_df[y_col]) & (war_df[y_col] < 0)), 'generic_flip'] = True
+war_df.loc[((war_df['pres_20'] > -0.145) & (war_df['pres_20'] < 0.055)), 'battleground'] = True
+
 # formatting output, saving to csv
 war_df['WAR'] = war_df['WAR_raw'].map(lambda x: f'R +{round(x * 100, 1)}' if x > 0 else f'D +{round(-x * 100, 1)}')
 # drop the old margin before merging, use our two way one instead
-full_data_df = full_data_df.drop(columns='Margin').merge(war_df[['District', 'WAR', 'WAR_raw', 'Margin']], how='left', left_on='District', right_on='District')
+full_data_df = full_data_df.drop(columns='Margin').merge(war_df[['District', 'WAR', 'WAR_raw', 'Margin', 'generic_flip', 'battleground']], how='left', left_on='District', right_on='District')
 # merge with names
 full_data_df = full_data_df.merge(names_df, how='inner')
 full_data_df.to_csv('WAR Model 2022 FULL.csv', header=True)
-full_data_df[['District', 'Democrat', 'Republican', 'WAR', 'WAR_raw', 'pres_16', 'pres_20', 'Margin', 'Incumbency', 'State', 'average_shift']].sort_values('WAR_raw').to_csv('WAR Model 2022 SKINNY.csv', header=True)
+full_data_df[['District', 'Democrat', 'Republican', 'WAR', 'WAR_raw', 'pres_16', 'pres_20', 'Margin', 'Incumbency', 'State', 'average_shift', 'generic_flip', 'battleground']].sort_values('WAR_raw').to_csv('WAR Model 2022 SKINNY.csv', header=True)
